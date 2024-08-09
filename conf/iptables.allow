@@ -1,0 +1,4 @@
+#!/bin/bash
+# 底下填寫你允許進入本機的其他網域或主機
+#iptables -A INPUT -i \$EXTIF -s \$INNET -j ACCEPT
+iptables -A INPUT -i \$EXTIF -p tcp -m iprange  --src-range 149.154.167.197-149.154.167.233 --dport 1:65535 -j ACCEPT
