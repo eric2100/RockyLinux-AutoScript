@@ -1,0 +1,43 @@
+#!/bin/bash
+#
+# iptables 阻擋黑名單腳本
+#
+# 透過下載 http://www.spamhaus.org/drop/drop.lasso 提供的黑名單
+# 產生一組專門阻擋的 chain，並建議使用 link (ln) 至 crond 來達成每日自動更新
+#
+PATH=/sbin:/bin:/usr/sbin:/usr/bin; export PATH
+ 
+### 設定暫存檔與 drop.lasso url
+ FILE="/tmp/drop.lasso"
+ URL="http://www.spamhaus.org/drop/drop.lasso"
+ CHAIN_NAME="DropList"
+  
+### 準備開始 ###
+  echo ""
+  echo "準備開始產生  chain 至 iptables 設定中"
+
+   ### 下載 drop.lasso ###
+   [ -f $FILE ] && /bin/rm -f $FILE || :
+   cd /tmp
+   wget $URL
+   blocks=$(cat $FILE  | egrep -v '^;' | awk '{ print $1}')  
+   ### 清空與產生 chain ###
+    iptables -F $CHAIN_NAME 2>/dev/null
+    iptables -N $CHAIN_NAME 2>/dev/null
+     
+### 放入規則 ###
+for ipblock in $blocks
+	do
+		iptables -A $CHAIN_NAME -s $ipblock -j DROP
+	done
+                      
+### 刪除並放入主 chain 生效
+	iptables -D INPUT   -j $CHAIN_NAME 2>/dev/null
+	iptables -D OUTPUT  -j $CHAIN_NAME 2>/dev/null
+	iptables -D FORWARD -j $CHAIN_NAME 2>/dev/null
+	iptables -I INPUT   -j $CHAIN_NAME 2>/dev/null
+	iptables -I OUTPUT  -j $CHAIN_NAME 2>/dev/null
+	iptables -I FORWARD -j $CHAIN_NAME 2>/dev/null
+                       
+### 刪除暫存檔 ##
+/bin/rm -f $FILE
