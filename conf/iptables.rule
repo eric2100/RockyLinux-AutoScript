@@ -1,13 +1,14 @@
 #!/bin/bash
 
 # 連到外部可上網的 網路介面卡名稱
-EXTIF="ens1"
+#EXTIF="ens1"
 # 內部 LAN 的連接介面；若無則寫成 INIF=""
-INIF="enp48s0f0"
+#INIF="enp48s0f0"
 # 若無內部網域介面，請填寫成 INNET=""
-INNET="192.168.20.0/24"
+#INNET="192.168.20.0/24"
 # 外部IP位址
-EXTNET="127.0.0.1"
+#EXTNET="127.0.0.1"
+
 export EXTIF INIF INNET EXTNET
 
 ########################### 防火牆設定 ##########################
@@ -15,10 +16,10 @@ export EXTIF INIF INNET EXTNET
 echo "1" > /proc/sys/net/ipv4/tcp_syncookies
 echo "1" > /proc/sys/net/ipv4/icmp_echo_ignore_broadcasts
 for i in /proc/sys/net/ipv4/conf/*/{rp_filter,log_martians}; do
-  echo "0" > $i
+    echo "0" > $i
 done
 for i in /proc/sys/net/ipv4/conf/*/{accept_source_route,accept_redirects,send_redirects}; do
-  echo "0" > $i
+    echo "0" > $i
 done
 
 # 2. 清除規則、設定預設政策及開放 lo 與相關的設定值
@@ -35,20 +36,20 @@ iptables -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
 
 # 3. 啟動額外的防火牆 script 模組
 if [ -f /usr/local/virus/iptables/iptables.deny ]; then
-  sh /usr/local/virus/iptables/iptables.deny
+    sh /usr/local/virus/iptables/iptables.deny
 fi
 if [ -f /usr/local/virus/iptables/iptables.allow ]; then
-  sh /usr/local/virus/iptables/iptables.allow
+    sh /usr/local/virus/iptables/iptables.allow
 fi
 if [ -f /usr/local/virus/iptables/iptables.http ]; then
-  sh /usr/local/virus/iptables/iptables.http
+    sh /usr/local/virus/iptables/iptables.http
 fi
 
 # 4. 允許某些類型的 ICMP 封包進入
 AICMP="0 3 3/4 4 11 12 14 16 18"
 for tyicmp in $AICMP
 do
-  iptables -A INPUT -i $EXTIF -p icmp --icmp-type $tyicmp -j ACCEPT
+    iptables -A INPUT -i $EXTIF -p icmp --icmp-type $tyicmp -j ACCEPT
 done
 
 # 5. 允許某些服務的進入，請依照你自己的環境開啟
@@ -78,10 +79,10 @@ modules="ip_tables iptable_nat ip_nat_ftp ip_nat_irc ip_conntrack
 ip_conntrack_ftp ip_conntrack_irc"
 for mod in $modules
 do
-  testmod=`lsmod | grep "^${mod} " | awk '{print $1}'`
-  if [ "$testmod" == "" ]; then
+    testmod=`lsmod | grep "^${mod} " | awk '{print $1}'`
+    if [ "$testmod" == "" ]; then
         modprobe $mod
-  fi
+    fi
 done
 # 2. 清除 NAT table 的規則吧！
 iptables -F -t nat
@@ -93,19 +94,19 @@ iptables -t nat -P OUTPUT      ACCEPT
 
 # 3. 若有內部介面的存在 (雙網卡) 開放成為路由器，且為 IP 分享器！
 if [ "$INIF" != "" ]; then
-  iptables -A INPUT -i $INIF -j ACCEPT
-  echo "1" > /proc/sys/net/ipv4/ip_forward
-  if [ "$INNET" != "" ]; then
-    for innet in $INNET
-    do
-        iptables -t nat -A POSTROUTING -s $innet -o $EXTIF -j MASQUERADE
-    done
-  fi
+    iptables -A INPUT -i $INIF -j ACCEPT
+    echo "1" > /proc/sys/net/ipv4/ip_forward
+    if [ "$INNET" != "" ]; then
+        for innet in $INNET
+        do
+            iptables -t nat -A POSTROUTING -s $innet -o $EXTIF -j MASQUERADE
+        done
+    fi
 fi
 
 # 如果你的 MSN 一直無法連線，或者是某些網站 OK 某些網站不 OK，
 # 可能是 MTU 的問題，那你可以將底下這一行給他取消註解來啟動 MTU 限制範圍
- iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1400:1536 -j TCPMSS --clamp-mss-to-pmtu
+iptables -A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -m tcpmss --mss 1400:1536 -j TCPMSS --clamp-mss-to-pmtu
 
 # 4. NAT 伺服器後端的 LAN 內對外之伺服器設定
 iptables -t nat -A PREROUTING -p tcp -d 114.33.97.55 -m multiport --port 80,443 -j DNAT --to 168.95.1.1
@@ -127,20 +128,20 @@ iptables -t nat -A PREROUTING -p tcp -d $EXTNET --dport 1007 -j DNAT --to 192.16
 ip_nat_print="211.22.129.238"
 for i in $ip_nat_print
 do
-	iptables -t nat -A PREROUTING -p tcp -s $i -d $EXTNET --dport 515 -j DNAT --to 192.168.20.13:515
-	iptables -t nat -A PREROUTING -p tcp -s $i -d $EXTNET --dport 631 -j DNAT --to 192.168.20.13:631
-	iptables -t nat -A PREROUTING -p tcp -s $i -d $EXTNET --dport 9100 -j DNAT --to 192.168.20.13:9100
+    iptables -t nat -A PREROUTING -p tcp -s $i -d $EXTNET --dport 515 -j DNAT --to 192.168.20.13:515
+    iptables -t nat -A PREROUTING -p tcp -s $i -d $EXTNET --dport 631 -j DNAT --to 192.168.20.13:631
+    iptables -t nat -A PREROUTING -p tcp -s $i -d $EXTNET --dport 9100 -j DNAT --to 192.168.20.13:9100
 done
 
 # 降速黑名單
 ip_slow="192.168.20.31 192.168.20.134"
 for i in $ip_slow
 do
-  # 限制速度 default value=30
-  iptables -A FORWARD -m limit -d $i --limit 100/s --limit-burst 10 -j ACCEPT
-  iptables -A FORWARD -d $i -j DROP
-  iptables -A FORWARD -m limit -s $i --limit 100/s --limit-burst 10 -j ACCEPT
-  iptables -A FORWARD -s $i -j DROP
+    # 限制速度 default value=30
+    iptables -A FORWARD -m limit -d $i --limit 100/s --limit-burst 10 -j ACCEPT
+    iptables -A FORWARD -d $i -j DROP
+    iptables -A FORWARD -m limit -s $i --limit 100/s --limit-burst 10 -j ACCEPT
+    iptables -A FORWARD -s $i -j DROP
 done
 
 # 6. 最終將這些功能儲存下來吧！
