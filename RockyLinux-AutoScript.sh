@@ -566,7 +566,7 @@ install_nginx(){
 
     #sed -i.$(date '+%Y%m%d%H%M%S') "41s:server_name  _;:server_name ${HOSTNAME};:g" /etc/nginx/nginx.conf
     #sed -i.$(date '+%Y%m%d%H%M%S') "42s:root         /usr/share/nginx/html;:root         /var/www/html;:g" /etc/nginx/nginx.conf
-    infomsg $'設定 iptable 白名單 \n'
+    infomsg $'設定 nginx.conf \n'
     wget -O /etc/nginx/nginx.conf $github_conf_url/conf/nginx.conf
 
     mkdir -p /var/www/html
