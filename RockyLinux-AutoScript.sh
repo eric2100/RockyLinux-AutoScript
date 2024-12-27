@@ -39,7 +39,7 @@ EXTNET="1.2.3.4"                    # 外部IP位址
 INSTALL_POSTFIX="YES"               # 若不安裝請填寫成          INSTALL_POSTFIX=""
 INSTALL_DOVECOT="YES"               # 若不安裝請填寫成          INSTALL_DOVECOT=""
 INSTALL_IPTABLES="YES"
-INSTALL_PHP="8.3"                   # 8.0 8.1 8.2 8.3 不安裝的話 INSTALL_PHP=""
+INSTALL_PHP="8.4"                   # 8.0 8.1 8.2 8.3 8.4 不安裝的話 INSTALL_PHP=""
 INSTALL_APACHE="NO"                 # 要裝apache 設定 YES
 INSTALL_NGINX="YES" 		            # 要裝 NGINX 設定 YES
 FREETDS_IP=""                       # MSSQL 的ip位址
